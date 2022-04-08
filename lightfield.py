@@ -25,33 +25,33 @@ def rotation_matrix(θ):
 
 class lightfield(object):
     ''' A class of Spatially Homogeneous Light-Field Gaussian Pulses '''
-    def __init__(self, k=np.array([1., 0., 0.]), w=1., E0=1., b=0.0, dt=0.01, T=10, Γ=np.inf, t0=0., ϕ=0.):
+    def __init__(self, k=np.array([1., 0., 0.]), w=1., E0=1e-5, b=0.0, dt=0.01, T=10, Γ=np.inf, t0=0., ϕ=0.):
         π = np.pi
         c = 137.035999206
 
-        self.k  = k
-        self.t0 = t0
-        self.w  = w
-        self.Γ  = Γ
-        self.b  = b
+        self.k  = k   ## unit wave-vector
+        self.t0 = t0  ## time delay
+        self.w  = w   ## frequency
+        self.Γ  = Γ   ## FWHM
+        self.b  = b   ## chirp parameter
 
-        self.dt = dt
-        self.T  = T
+        self.dt = dt  ## time-step
+        self.T  = T   ## duration
         
-        self.ϕu = ϕ
-        self.ϕd = ϕ
-        self.Eu = E0
-        self.Ed = E0
+        self.ϕu = ϕ   ## up   phase
+        self.ϕd = ϕ   ## down phase
+        self.Eu = E0  ## up   amplitude
+        self.Ed = 0.  ## down amplitude
 
-        self.D      = None
-        self.E_stx  = None
-        self.E_sωx  = None
-        self.A_stx  = None
-        self.A_sωx  = None
-        self.B_stx  = None
-        self.B_sωx  = None        
-        self.F_stuv = None
-        self.F_sωuv = None
+        self.D      = None  ## density-matrix
+        self.E_stx  = None  ## real-time E-field
+        self.E_sωx  = None  ## frequency E-field
+        self.A_stx  = None  ## real-time A-field
+        self.A_sωx  = None  ## frequency A-field
+        self.B_stx  = None  ## real-time B-field
+        self.B_sωx  = None  ## frequency B-field      
+        self.F_stuv = None  ## real-time F-field
+        self.F_sωuv = None  ## frequency F-field
     
     def fft(self, X):
         return np.sqrt(2*π)/(len(self.t) * self.dω) * np.fft.fftshift( np.fft.fft((X).real , axis=1) )
@@ -73,14 +73,14 @@ class lightfield(object):
         self.e_sx  = np.array([basis[subbasis[0]], basis[subbasis[1]]]) ## unit ortho. basis vectors
         self.E_stx = self.gaussianpulse()[None, :,None] * (self.D @ self.e_sx)[:,None,:]
         self.E_sωx = self.fft(self.E_stx)
-        return self.E_stx, self.E_sωx
+        return np.sum(self.E_stx, axis=0), np.sum(self.E_sωx, axis=0)
 
     def get_A(self):
         if self.E_sωx is None:
             self.get_E()
         self.A_stx = c/(1j * self.w) * self.E_stx
         self.A_sωx = c/(1j * self.w) * self.E_sωx
-        return self.A_stx, self.A_sωx
+        return np.sum(self.A_stx, axis=0), np.sum(self.A_sωx, axis=0)
     
     def get_F(self):
         if self.E_sωx is None:
@@ -104,5 +104,5 @@ class lightfield(object):
         F_sωuv[:,:,2,3] =  self.B_sωx[:,:,0]
         F_sωuv         -= F_sωuv.swapaxes(2,3)
         self.F_sωuv = F_sωuv
-        return self.F_stuv, self.F_sωuv
+        return np.sum(self.F_stuv, axis=0), np.sum(self.F_sωuv, axis=0)
 
