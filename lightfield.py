@@ -25,7 +25,7 @@ def rotation_matrix(θ):
 
 class lightfield(object):
     ''' A class of Spatially Homogeneous Light-Field Gaussian Pulses '''
-    def __init__(self, k=np.array([1., 0., 0.]), w=1., E0=1e-5, b=0.0, dt=0.01, T=10, Γ=np.inf, t0=0., ϕ=0.):
+    def __init__(self, k=np.array([1., 0., 0.]), w=1., E0=1e-5, b=0.0, dt=0.01, T=10, Γ=np.inf, t0=0.):
         π = np.pi
         c = 137.035999206
 
@@ -33,16 +33,12 @@ class lightfield(object):
         self.t0 = t0  ## time delay
         self.w  = w   ## frequency
         self.Γ  = Γ   ## FWHM
+        self.E0 = E0  ## E-field amplitude
         self.b  = b   ## chirp parameter
 
         self.dt = dt  ## time-step
         self.T  = T   ## duration
         
-        self.ϕu = ϕ   ## up   phase
-        self.ϕd = ϕ   ## down phase
-        self.Eu = E0  ## up   amplitude
-        self.Ed = 0.  ## down amplitude
-
         self.D      = None  ## density-matrix
         self.E_stx  = None  ## real-time E-field
         self.E_sωx  = None  ## frequency E-field
@@ -57,11 +53,11 @@ class lightfield(object):
         return np.sqrt(2*π)/(len(self.t) * self.dω) * np.fft.fftshift( np.fft.fft((X).real , axis=1) )
 
     def gaussianpulse(self):
-        return np.exp( (1j*self.b - 4*np.log(2)/(self.Γ**2) ) * (self.t - self.t0)**2 - 1j * self.w * (self.t - self.t0) )
+        return self.E0 * np.exp( (1j*self.b - 4*np.log(2)/(self.Γ**2) ) * (self.t - self.t0)**2 - 1j * self.w * (self.t - self.t0) )
 
     def get_E(self, D=None):
         if D is None and self.D is None:
-            self.D = np.array([[self.Eu * np.exp(1j*self.ϕu), 0.], [0., self.Ed * np.exp(1j*self.ϕd)]])
+            self.D = np.array([[ 1., 0.], [0., 0.]])
 
         self.t  = np.arange(0., self.T, self.dt)
         self.dω = 2*π / (self.T-self.dt)
