@@ -70,14 +70,14 @@ class lightfield(object):
         self.e_sx  = np.array([basis[subbasis[0]], basis[subbasis[1]]]) ## unit ortho. basis vectors
         self.E_stx = self.gaussianpulse()[None, :,None] * (self.D @ self.e_sx)[:,None,:]
         self.E_sωx = self.fft(self.E_stx)
-        return np.sum(self.E_stx, axis=0), np.sum(self.E_sωx, axis=0)
+        return np.sum(self.E_stx, axis=0).real, np.sum(self.E_sωx, axis=0).real
 
     def get_A(self):
         if self.E_sωx is None:
             self.get_E()
         self.A_stx = c/(1j * self.w) * self.E_stx
         self.A_sωx = c/(1j * self.w) * self.E_sωx
-        return np.sum(self.A_stx, axis=0), np.sum(self.A_sωx, axis=0)
+        return np.sum(self.A_stx, axis=0).real, np.sum(self.A_sωx, axis=0).real
     
     def get_F(self):
         if self.E_sωx is None:
@@ -101,5 +101,5 @@ class lightfield(object):
         F_sωuv[:,:,2,3] =  self.B_sωx[:,:,0]
         F_sωuv         -= F_sωuv.swapaxes(2,3)
         self.F_sωuv = F_sωuv
-        return np.sum(self.F_stuv, axis=0), np.sum(self.F_sωuv, axis=0)
+        return np.sum(self.F_stuv, axis=0).real, np.sum(self.F_sωuv, axis=0).real
 
