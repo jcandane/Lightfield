@@ -63,9 +63,10 @@ class lightfield(object):
         self.dω = 2*π / (self.T-self.dt)
         self.Ω  = π / self.dt
         self.ω  = np.arange(-self.Ω, self.Ω+self.dω/2, self.dω)
+        self.k  = self.k/np.linalg.norm(self.k)
 
-        basis      = rotation_matrix(90) @ (k/np.linalg.norm(k))
-        subbasis   = np.where( np.sum( np.abs( basis - k[None, :] ), axis=1) != 0)[0]
+        basis      = rotation_matrix(90) @ self.k
+        subbasis   = np.where( np.sum( np.abs( basis - self.k[None, :] ), axis=1) != 0)[0]
         self.e_sx  = np.array([basis[subbasis[0]], basis[subbasis[1]]]) ## unit ortho. basis vectors
         self.E_stx = self.gaussianpulse()[None, :,None] * (self.D @ self.e_sx)[:,None,:]
         self.E_sωx = self.fft(self.E_stx)
